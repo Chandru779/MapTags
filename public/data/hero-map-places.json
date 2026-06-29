@@ -1,0 +1,74 @@
+[
+  {
+    "id": "bengaluru",
+    "place": "Bengaluru",
+    "country": "Karnataka, India",
+    "user": "Chandru",
+    "initials": "CH",
+    "trip": "South India Heritage Loop",
+    "avatarImage": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=96&h=96&fit=crop",
+    "color": "#8b5cf6",
+    "x": 48,
+    "y": 62
+  },
+  {
+    "id": "hampi",
+    "place": "Hampi",
+    "country": "Karnataka, India",
+    "user": "Chandru",
+    "initials": "CH",
+    "trip": "South India Heritage Loop",
+    "avatarImage": "https://images.unsplash.com/photo-1596176530439-9f598cec6a73?w=96&h=96&fit=crop",
+    "color": "#8b5cf6",
+    "x": 44,
+    "y": 50
+  },
+  {
+    "id": "gokarna",
+    "place": "Gokarna",
+    "country": "Karnataka, India",
+    "user": "Chandru",
+    "initials": "CH",
+    "trip": "South India Heritage Loop",
+    "avatarImage": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=96&h=96&fit=crop",
+    "color": "#8b5cf6",
+    "x": 38,
+    "y": 54
+  },
+  {
+    "id": "munnar",
+    "place": "Munnar",
+    "country": "Kerala, India",
+    "user": "Chandru",
+    "initials": "CH",
+    "trip": "Kerala Tea Trail",
+    "avatarImage": "https://images.unsplash.com/photo-1593693397649-85e858f9660e?w=96&h=96&fit=crop",
+    "color": "#06b6d4",
+    "x": 47,
+    "y": 78
+  },
+  {
+    "id": "coorg",
+    "place": "Coorg",
+    "country": "Karnataka, India",
+    "user": "Chandru",
+    "initials": "CH",
+    "trip": "Western Ghats Monsoon Run",
+    "avatarImage": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=96&h=96&fit=crop",
+    "color": "#f97316",
+    "x": 42,
+    "y": 66
+  },
+  {
+    "id": "kochi",
+    "place": "Kochi",
+    "country": "Kerala, India",
+    "user": "Chandru",
+    "initials": "CH",
+    "trip": "Kerala Tea Trail",
+    "avatarImage": "https://images.unsplash.com/photo-1593693397649-85e858f9660e?w=96&h=96&fit=crop",
+    "color": "#06b6d4",
+    "x": 40,
+    "y": 82
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "id": "maya-k",
+    "name": "Maya K.",
+    "title": "Landscape photographer",
+    "location": "Reykjavík, Iceland",
+    "bio": "Chasing auroras and volcanic coastlines across Iceland's ring road.",
+    "avatar": "MK",
+    "stats": {
+      "totalPlaces": 14,
+      "totalTrips": 2,
+      "totalDistanceKm": 1850,
+      "countriesVisited": 3
+    },
+    "highlightTrip": "Iceland Ring Road",
+    "tags": [
+      "photography",
+      "nordic",
+      "solo"
+    ]
+  },
+  {
+    "id": "alex-r",
+    "name": "Alex R.",
+    "title": "UX designer & rail enthusiast",
+    "location": "Tokyo, Japan",
+    "bio": "Documenting shinkansen hops and temple towns across Honshu.",
+    "avatar": "AR",
+    "stats": {
+      "totalPlaces": 22,
+      "totalTrips": 3,
+      "totalDistanceKm": 920,
+      "countriesVisited": 2
+    },
+    "highlightTrip": "Tokyo → Kyoto Golden Route",
+    "tags": [
+      "rail",
+      "culture",
+      "food"
+    ]
+  },
+  {
+    "id": "priya-s",
+    "name": "Priya S.",
+    "title": "Trekking guide & anthropologist",
+    "location": "Cusco, Peru",
+    "bio": "High-altitude routes through the Andes with community homestays.",
+    "avatar": "PS",
+    "stats": {
+      "totalPlaces": 18,
+      "totalTrips": 2,
+      "totalDistanceKm": 340,
+      "countriesVisited": 4
+    },
+    "highlightTrip": "Sacred Valley Trek",
+    "tags": [
+      "trekking",
+      "andes",
+      "culture"
+    ]
+  },
+  {
+    "id": "james-l",
+    "name": "James L.",
+    "title": "Wildlife conservationist",
+    "location": "Arusha, Tanzania",
+    "bio": "Safari circuits across East Africa with GPS-tagged migration tracking.",
+    "avatar": "JL",
+    "stats": {
+      "totalPlaces": 11,
+      "totalTrips": 2,
+      "totalDistanceKm": 680,
+      "countriesVisited": 5
+    },
+    "highlightTrip": "Serengeti Migration Circuit",
+    "tags": [
+      "safari",
+      "wildlife",
+      "conservation"
+    ]
+  }
+]

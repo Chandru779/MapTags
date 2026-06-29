@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="indiaFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(167,139,250,0.12)" />
+      <stop offset="100%" stop-color="rgba(255,255,255,0.04)" />
+    </linearGradient>
+    <linearGradient id="southFill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(139,92,246,0.08)" />
+      <stop offset="100%" stop-color="rgba(6,182,212,0.06)" />
+    </linearGradient>
+  </defs>
+  <path
+    d="M355 88 C395 78 435 82 468 98 C502 115 522 148 518 188 C530 218 524 258 502 296 C478 338 442 372 398 384 C358 394 318 378 296 348 C278 322 272 286 280 248 C288 210 306 172 328 142 C340 122 346 98 355 88 Z"
+    fill="url(#indiaFill)"
+    stroke="rgba(255,255,255,0.16)"
+    stroke-width="1.5"
+  />
+  <path
+    d="M318 148 C334 138 352 142 362 158 C372 174 368 198 352 214 C338 228 318 232 304 218 C292 206 290 182 302 164 C308 154 312 150 318 148 Z"
+    fill="url(#southFill)"
+    stroke="rgba(167,139,250,0.2)"
+    stroke-width="1"
+  />
+  <ellipse cx="400" cy="240" rx="120" ry="80" fill="rgba(139,92,246,0.04)" />
+</svg>
