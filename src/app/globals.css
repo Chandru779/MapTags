@@ -108,6 +108,13 @@ body {
   transform: rotate(-45deg) scale(1.15);
 }
 
+.place-marker-selected .place-marker-inner {
+  box-shadow:
+    0 0 0 3px oklch(0.68 0.2 285 / 0.5),
+    0 4px 16px rgba(0, 0, 0, 0.4);
+  transform: rotate(-45deg) scale(1.2);
+}
+
 .waypoint-marker-inner {
   display: flex;
   align-items: center;
@@ -123,17 +130,101 @@ body {
 }
 
 .photo-marker-img {
-  width: 48px;
-  height: 48px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 10px;
+  opacity: 0;
+  transition:
+    opacity 0.3s ease,
+    transform 0.2s ease;
+}
+
+.photo-marker-img-loaded {
+  opacity: 1;
+}
+
+.photo-marker-frame {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border-radius: 12px;
   border: 2px solid white;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  background: oklch(0.22 0.03 280);
+}
+
+.photo-marker-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    oklch(0.25 0.02 280) 8%,
+    oklch(0.35 0.03 280) 18%,
+    oklch(0.25 0.02 280) 33%
+  );
+  background-size: 200% 100%;
+  animation: photo-marker-shimmer 1.2s linear infinite;
+}
+
+.photo-marker-skeleton-hidden {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.photo-marker-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: oklch(0.55 0.22 285 / 0.15);
+}
+
+.photo-marker:hover .photo-marker-frame {
+  transform: scale(1.08);
   transition: transform 0.2s;
 }
 
-.photo-marker:hover .photo-marker-img {
-  transform: scale(1.1);
+.photo-marker-selected .photo-marker-frame {
+  box-shadow:
+    0 0 0 3px oklch(0.68 0.2 285 / 0.65),
+    0 6px 18px rgba(0, 0, 0, 0.45);
+  transform: scale(1.12);
+}
+
+@keyframes photo-marker-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.viewpoint-canvas {
+  background: oklch(0.15 0.02 280);
+}
+
+.viewpoint-image {
+  transition: transform 0.05s linear;
+  will-change: transform;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.55 0.05 280 / 0.35) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: oklch(0.55 0.05 280 / 0.35);
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .maplibregl-ctrl-group {
@@ -183,13 +274,12 @@ body {
   }
 }
 
-@keyframes hero-map-float {
-  0%,
-  100% {
+@keyframes hero-map-bg-scroll {
+  0% {
     transform: translate3d(0, 0, 0);
   }
-  50% {
-    transform: translate3d(-0.6%, 0.4%, 0);
+  100% {
+    transform: translate3d(-50%, -50%, 0);
   }
 }
 
@@ -272,8 +362,15 @@ body {
   animation: hero-grid-drift 12s linear infinite;
 }
 
-.hero-map-drift {
-  animation: hero-map-float 18s ease-in-out infinite;
+.hero-map-bg-scroll {
+  position: absolute;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("/hero-map-tile.svg");
+  background-size: 320px 320px;
+  animation: hero-map-bg-scroll 24s linear infinite;
+  will-change: transform;
 }
 
 .hero-map-pin {
@@ -294,17 +391,17 @@ body {
   .hero-map-pin,
   .hero-map-legend,
   .hero-map-grid,
-  .hero-map-drift {
+  .hero-map-bg-scroll {
     animation: none;
     opacity: 1;
   }
 
-  .hero-map-tilt {
-    transform: rotateX(8deg) rotateY(-4deg);
+  .hero-map-bg-scroll {
+    transform: none;
   }
 
-  .hero-map-drift {
-    transform: none;
+  .hero-map-tilt {
+    transform: rotateX(8deg) rotateY(-4deg);
   }
 
   .hero-route-line,

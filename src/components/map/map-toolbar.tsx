@@ -10,6 +10,8 @@ import {
   ZoomOut,
   ImageIcon,
   Map,
+  Crosshair,
+  Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -28,6 +30,34 @@ interface MapToolbarProps {
   onPlacesListToggle: () => void;
   placesListOpen: boolean;
   placeCount: number;
+}
+
+function ToolbarButton({
+  active,
+  label,
+  onClick,
+  children,
+}: {
+  active?: boolean;
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Button
+      size="icon"
+      variant={active ? "default" : "ghost"}
+      title={label}
+      aria-label={label}
+      className={cn(
+        "relative h-9 w-9 shrink-0",
+        active && "shadow-sm shadow-primary/20"
+      )}
+      onClick={onClick}
+    >
+      {children}
+    </Button>
+  );
 }
 
 export function MapToolbar({
@@ -57,89 +87,64 @@ export function MapToolbar({
   ];
 
   return (
-    <div className="absolute left-4 top-20 z-10 flex flex-col gap-2 sm:left-6">
-      {showStamp && (
-        <Button
-        size={stampMode ? "default" : "icon"}
-        variant={stampMode ? "default" : "secondary"}
-        title="Click map to add a place stamp"
-        className={cn(
-          "shadow-lg backdrop-blur-md",
-          stampMode && "gap-2 pr-4 shadow-primary/30"
+    <div className="absolute left-3 top-[4.75rem] z-10 flex max-h-[calc(100%-6rem)] flex-col gap-2 overflow-y-auto overscroll-contain sm:left-5 [&::-webkit-scrollbar]:hidden">
+      <div className="flex w-11 flex-col gap-1 rounded-xl border border-border/50 bg-background/85 p-1 shadow-lg backdrop-blur-md">
+        {showStamp && (
+          <ToolbarButton
+            active={stampMode}
+            label={stampMode ? "Exit stamp mode" : "Stamp a place on the map"}
+            onClick={onStampToggle}
+          >
+            <Crosshair className="h-4 w-4" />
+          </ToolbarButton>
         )}
-        onClick={onStampToggle}
-      >
-        <MapPin className="h-4 w-4" />
-        {stampMode && "Stamp mode"}
-      </Button>
-      )}
+        <ToolbarButton
+          active={placesListOpen}
+          label={
+            placesListOpen
+              ? "Hide travel log"
+              : `Show travel log (${placeCount} places)`
+          }
+          onClick={onPlacesListToggle}
+        >
+          <Map className="h-4 w-4" />
+          {placeCount > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
+              {placeCount > 99 ? "99+" : placeCount}
+            </span>
+          )}
+        </ToolbarButton>
+      </div>
 
-      <Button
-        size={placesListOpen ? "default" : "icon"}
-        variant={placesListOpen ? "default" : "secondary"}
-        title="Toggle places list"
-        className={cn(
-          "shadow-lg backdrop-blur-md",
-          placesListOpen && "gap-2 pr-3"
-        )}
-        onClick={onPlacesListToggle}
-      >
-        <Map className="h-4 w-4" />
-        {placesListOpen && `${placeCount} places`}
-      </Button>
-
-      <div className="flex flex-col gap-1 rounded-xl border border-border/50 bg-background/80 p-1 shadow-lg backdrop-blur-md">
+      <div className="flex w-11 flex-col gap-0.5 rounded-xl border border-border/50 bg-background/85 p-1 shadow-lg backdrop-blur-md">
+        <p className="px-1 pb-0.5 text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          Layers
+        </p>
         {layerButtons.map(({ key, icon: Icon, label }) => (
-          <Button
+          <ToolbarButton
             key={key}
-            size="icon"
-            variant={layers[key] ? "default" : "ghost"}
-            title={label}
-            className="h-8 w-8"
+            active={layers[key]}
+            label={label}
             onClick={() => onLayerToggle(key)}
           >
             <Icon className="h-3.5 w-3.5" />
-          </Button>
+          </ToolbarButton>
         ))}
       </div>
 
-      <div className="flex flex-col gap-1 rounded-xl border border-border/50 bg-background/80 p-1 shadow-lg backdrop-blur-md">
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Recenter on your trips"
-          className="h-8 w-8"
-          onClick={onRecenter}
-        >
+      <div className="flex w-11 flex-col gap-0.5 rounded-xl border border-border/50 bg-background/85 p-1 shadow-lg backdrop-blur-md">
+        <ToolbarButton label="Recenter on your trips" onClick={onRecenter}>
           <LocateFixed className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Fit all routes and places"
-          className="h-8 w-8"
-          onClick={onFitAll}
-        >
-          <Layers className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Zoom in"
-          className="h-8 w-8"
-          onClick={onZoomIn}
-        >
+        </ToolbarButton>
+        <ToolbarButton label="Fit all routes and places" onClick={onFitAll}>
+          <Maximize2 className="h-3.5 w-3.5" />
+        </ToolbarButton>
+        <ToolbarButton label="Zoom in" onClick={onZoomIn}>
           <ZoomIn className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          title="Zoom out"
-          className="h-8 w-8"
-          onClick={onZoomOut}
-        >
+        </ToolbarButton>
+        <ToolbarButton label="Zoom out" onClick={onZoomOut}>
           <ZoomOut className="h-3.5 w-3.5" />
-        </Button>
+        </ToolbarButton>
       </div>
     </div>
   );

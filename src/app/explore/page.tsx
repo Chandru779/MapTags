@@ -6,7 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Compass, Star, Clock, Camera } from "lucide-react";
 import { MapView, type MapViewHandle } from "@/components/map/map-view";
 import { MapToolbar } from "@/components/map/map-toolbar";
-import { StampDialog, PlaceDetailDialog } from "@/components/map/stamp-dialog";
+import { StampDialog } from "@/components/map/stamp-dialog";
+import { PlaceImmersivePanel } from "@/components/map/place-immersive-panel";
+import { PlacePhoto } from "@/components/map/place-photo";
 import { useTrailMarkStore } from "@/lib/store";
 import { reverseGeocode } from "@/lib/geo";
 import type { MapLayerVisibility, Place } from "@/lib/types";
@@ -42,6 +44,7 @@ function ExploreContent() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const [layers, setLayers] = useState<MapLayerVisibility>(DEFAULT_LAYERS);
 
   const [stampDialogOpen, setStampDialogOpen] = useState(false);
@@ -52,6 +55,11 @@ function ExploreContent() {
   useEffect(() => {
     loadUserData();
   }, [loadUserData]);
+
+  useEffect(() => {
+    document.body.classList.add("overflow-hidden");
+    return () => document.body.classList.remove("overflow-hidden");
+  }, []);
 
   const handleLayerToggle = useCallback((key: keyof MapLayerVisibility) => {
     setLayers((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -90,19 +98,42 @@ function ExploreContent() {
       });
       setStampDialogOpen(false);
       setStampMode(false);
-      mapRef.current?.flyTo(clickCoords.lng, clickCoords.lat, 12);
+      mapRef.current?.flyToPlace(clickCoords.lng, clickCoords.lat, {
+        onComplete: () => {},
+      });
     },
     [addPlace, clickCoords]
   );
 
-  const handlePlaceClick = useCallback((place: Place) => {
+  const navigateToPlace = useCallback((place: Place) => {
     setSelectedPlace(place);
     setDetailOpen(true);
+    setIsNavigating(true);
+
+    mapRef.current?.flyToPlace(place.lng, place.lat, {
+      onComplete: () => setIsNavigating(false),
+    });
+  }, []);
+
+  const handlePlaceClick = useCallback(
+    (place: Place) => {
+      navigateToPlace(place);
+    },
+    [navigateToPlace]
+  );
+
+  const handleDetailClose = useCallback((open: boolean) => {
+    if (!open) {
+      setDetailOpen(false);
+      setSelectedPlace(null);
+      setIsNavigating(false);
+      mapRef.current?.resetView();
+    }
   }, []);
 
   if (dataLoading && places.length === 0) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4 pt-16">
+      <div className="flex h-[calc(100dvh-4rem)] flex-col items-center justify-center gap-4">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         <div className="text-center">
           <p className="font-medium">Loading your travel records</p>
@@ -116,7 +147,7 @@ function ExploreContent() {
 
   if (dataError && places.length === 0) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4 pt-16">
+      <div className="flex h-[calc(100dvh-4rem)] flex-col items-center justify-center gap-4">
         <p className="text-destructive">{dataError}</p>
         <Button onClick={() => loadUserData()}>Retry</Button>
       </div>
@@ -124,7 +155,7 @@ function ExploreContent() {
   }
 
   return (
-    <div className="relative h-[calc(100vh-0px)] pt-16">
+    <div className="fixed inset-x-0 bottom-0 top-16 overflow-hidden">
       <MapView
         ref={mapRef}
         places={places}
@@ -132,10 +163,11 @@ function ExploreContent() {
         heatZones={heatZones}
         photoHotspots={photoHotspots}
         layers={layers}
+        selectedPlaceId={selectedPlace?.id ?? null}
         interactive={stampMode}
         onMapClick={handleMapClick}
         onPlaceClick={handlePlaceClick}
-        className="absolute inset-0 top-16"
+        className="absolute inset-0"
       />
 
       <MapToolbar
@@ -156,7 +188,7 @@ function ExploreContent() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute left-1/2 top-20 z-10 -translate-x-1/2"
+          className="absolute left-1/2 top-3 z-10 -translate-x-1/2"
         >
           <Badge className="gap-2 px-4 py-2 text-sm shadow-lg">
             <Compass className="h-3.5 w-3.5 animate-pulse" />
@@ -172,28 +204,31 @@ function ExploreContent() {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 320, opacity: 0 }}
             transition={{ type: "spring", damping: 25 }}
-            className="absolute bottom-4 right-4 top-20 z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-border/50 bg-background/90 shadow-2xl backdrop-blur-xl sm:right-6"
+            className="absolute bottom-3 right-3 top-3 z-10 flex w-[min(100%,22rem)] min-h-0 flex-col overflow-hidden rounded-2xl border border-border/50 bg-background/90 shadow-2xl backdrop-blur-xl sm:right-4"
           >
-            <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
-              <div>
-                <h2 className="font-semibold">Your travel log</h2>
-                <p className="text-xs text-muted-foreground">
-                  {places.length} places · {trips.length} trips ·{" "}
-                  {formatDistance(
-                    trips.reduce((s, t) => s + t.distanceKm, 0)
-                  )}
-                </p>
+            <div className="shrink-0 border-b border-border/50 px-4 py-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <h2 className="font-semibold">Your travel log</h2>
+                  <p className="text-xs text-muted-foreground">
+                    {places.length} places · {trips.length} trips ·{" "}
+                    {formatDistance(
+                      trips.reduce((s, t) => s + t.distanceKm, 0)
+                    )}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="shrink-0"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  Close
+                </Button>
               </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => setSidebarOpen(false)}
-              >
-                Close
-              </Button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 scrollbar-thin">
               {trips.length > 0 && (
                 <div className="mb-4 space-y-2">
                   <p className="px-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -208,7 +243,7 @@ function ExploreContent() {
                       <CardContent className="p-3">
                         <div className="flex items-center gap-2">
                           <div
-                            className="h-2.5 w-2.5 rounded-full"
+                            className="h-2.5 w-2.5 shrink-0 rounded-full"
                             style={{ background: trip.color }}
                           />
                           <p className="truncate text-sm font-medium">
@@ -243,24 +278,20 @@ function ExploreContent() {
                   {places.map((place) => (
                     <Card
                       key={place.id}
-                      className="cursor-pointer border-border/50 transition hover:border-primary/30"
-                      onClick={() => {
-                        handlePlaceClick(place);
-                        mapRef.current?.flyTo(place.lng, place.lat, 12);
-                      }}
+                      className={`cursor-pointer border-border/50 transition hover:border-primary/30 ${
+                        selectedPlace?.id === place.id
+                          ? "border-primary/50 ring-1 ring-primary/20"
+                          : ""
+                      }`}
+                      onClick={() => navigateToPlace(place)}
                     >
                       <CardContent className="flex items-start gap-3 p-3">
-                        {place.photos?.[0] ? (
-                          <img
-                            src={place.photos[0]}
-                            alt={place.name}
-                            className="h-14 w-14 shrink-0 rounded-lg object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-lg">
-                            📍
-                          </div>
-                        )}
+                        <PlacePhoto
+                          src={place.photos?.[0]}
+                          alt={place.name}
+                          className="h-14 w-14 shrink-0 rounded-lg"
+                          fallbackClassName="h-14 w-14 shrink-0 rounded-lg"
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium">{place.name}</p>
                           <p className="line-clamp-2 text-xs text-muted-foreground">
@@ -296,6 +327,14 @@ function ExploreContent() {
         )}
       </AnimatePresence>
 
+      <PlaceImmersivePanel
+        place={selectedPlace}
+        open={detailOpen}
+        onOpenChange={handleDetailClose}
+        onDelete={removePlace}
+        isNavigating={isNavigating}
+      />
+
       <StampDialog
         open={stampDialogOpen}
         onOpenChange={setStampDialogOpen}
@@ -305,13 +344,6 @@ function ExploreContent() {
         onPlaceNameChange={setPlaceName}
         onSave={handleSaveStamp}
         loading={geocoding}
-      />
-
-      <PlaceDetailDialog
-        place={selectedPlace}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        onDelete={removePlace}
       />
     </div>
   );
@@ -326,7 +358,7 @@ export default function ExplorePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex h-screen items-center justify-center pt-16">
+        <div className="flex h-[calc(100dvh-4rem)] items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       }

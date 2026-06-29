@@ -20,9 +20,23 @@ import type {
 } from "@/lib/types";
 import { getBoundsFromPoints } from "@/lib/geo";
 import { cn } from "@/lib/utils";
+import {
+  createPhotoMarkerEl,
+  createPlaceMarkerEl,
+} from "@/components/map/create-map-markers";
+
+export interface FlyToPlaceOptions {
+  zoom?: number;
+  pitch?: number;
+  bearing?: number;
+  duration?: number;
+  onComplete?: () => void;
+}
 
 export interface MapViewHandle {
   flyTo: (lng: number, lat: number, zoom?: number) => void;
+  flyToPlace: (lng: number, lat: number, options?: FlyToPlaceOptions) => void;
+  resetView: () => void;
   fitAll: () => void;
   recenter: () => void;
   zoomIn: () => void;
@@ -41,6 +55,7 @@ interface MapViewProps {
   onMapClick?: (lng: number, lat: number) => void;
   onPlaceClick?: (place: Place) => void;
   onStyleReady?: () => void;
+  selectedPlaceId?: string | null;
   className?: string;
   showControls?: boolean;
   initialCenter?: [number, number];
@@ -77,6 +92,7 @@ export const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     onMapClick,
     onPlaceClick,
     onStyleReady,
+    selectedPlaceId,
     className,
     showControls = false,
     initialCenter = [78.9629, 20.5937],
@@ -98,6 +114,7 @@ export const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   const layersRef = useRef(layers);
   const activeTripIdRef = useRef(activeTripId);
   const draftRouteRef = useRef(draftRoute);
+  const selectedPlaceIdRef = useRef(selectedPlaceId);
   const appliedThemeRef = useRef<string | null>(null);
   const mapCreatedRef = useRef(false);
   const styleReadyCalledRef = useRef(false);
@@ -118,6 +135,7 @@ export const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
   layersRef.current = layers;
   activeTripIdRef.current = activeTripId;
   draftRouteRef.current = draftRoute;
+  selectedPlaceIdRef.current = selectedPlaceId;
   initialCenterRef.current = initialCenter;
   initialZoomRef.current = initialZoom;
 
@@ -134,7 +152,43 @@ export const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
 
   useImperativeHandle(ref, () => ({
     flyTo: (lng, lat, zoom = 10) => {
-      mapRef.current?.flyTo({ center: [lng, lat], zoom, duration: 1500 });
+      mapRef.current?.flyTo({
+        center: [lng, lat],
+        zoom,
+        pitch: 0,
+        bearing: 0,
+        duration: 1500,
+      });
+    },
+    flyToPlace: (lng, lat, options = {}) => {
+      const map = mapRef.current;
+      if (!map) return;
+
+      const {
+        zoom = 15.5,
+        pitch = 58,
+        bearing = ((lng * 47 + lat * 31) % 60) - 30,
+        duration = 2400,
+        onComplete,
+      } = options;
+
+      if (onComplete) {
+        map.once("moveend", onComplete);
+      }
+
+      map.flyTo({
+        center: [lng, lat],
+        zoom,
+        pitch,
+        bearing,
+        duration,
+        essential: true,
+      });
+    },
+    resetView: () => {
+      const map = mapRef.current;
+      if (!map) return;
+      map.easeTo({ pitch: 0, bearing: 0, duration: 900 });
     },
     fitAll: () => {
       const map = mapRef.current;
@@ -202,16 +256,18 @@ export const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     const currentDraftRoute = draftRouteRef.current;
     const zoom = map.getZoom();
 
+    const selectedId = selectedPlaceIdRef.current;
+    const showPhotoPins = currentLayers.photos && zoom >= 8;
+
     if (currentLayers.places) {
       currentPlaces.forEach((place) => {
-        const el = document.createElement("div");
-        el.className = "place-marker";
-        el.innerHTML = `<div class="place-marker-inner"><span>📍</span></div>`;
-        el.style.cursor = "pointer";
-        el.addEventListener("click", (e) => {
-          e.stopPropagation();
-          onPlaceClickRef.current?.(place);
-        });
+        if (showPhotoPins && place.photos && place.photos.length > 0) return;
+
+        const el = createPlaceMarkerEl(
+          place,
+          () => onPlaceClickRef.current?.(place),
+          place.id === selectedId
+        );
         markersRef.current.push(
           new maplibregl.Marker({ element: el, anchor: "bottom" })
             .setLngLat([place.lng, place.lat])
@@ -220,18 +276,15 @@ export const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
       });
     }
 
-    if (currentLayers.photos && zoom >= 8) {
+    if (showPhotoPins) {
       currentPlaces
         .filter((p) => p.photos && p.photos.length > 0)
         .forEach((place) => {
-          const el = document.createElement("div");
-          el.className = "photo-marker";
-          el.innerHTML = `<img src="${place.photos![0]}" alt="${place.name}" class="photo-marker-img" />`;
-          el.style.cursor = "pointer";
-          el.addEventListener("click", (e) => {
-            e.stopPropagation();
-            onPlaceClickRef.current?.(place);
-          });
+          const el = createPhotoMarkerEl(
+            place,
+            () => onPlaceClickRef.current?.(place),
+            place.id === selectedId
+          );
           markersRef.current.push(
             new maplibregl.Marker({ element: el, anchor: "bottom" })
               .setLngLat([place.lng, place.lat])
@@ -493,6 +546,7 @@ export const MapView = forwardRef<MapViewHandle, MapViewProps>(function MapView(
     layers,
     activeTripId,
     draftRoute,
+    selectedPlaceId,
   ]);
 
   useEffect(() => {
