@@ -27,6 +27,11 @@ npm-shrinkwrap.json
 .yarn/install-state.gz
 .pnp.*
 
+# Editor / AI tooling (local only)
+AGENTS.md
+CLAUDE.md
+.cursor/
+
 # Misc
 .DS_Store
 .fleet
